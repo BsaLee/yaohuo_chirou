@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>妖火自动吃肉</title>
+    <!-- 引入Vue.js的CDN链接 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <!-- 引入Axios的CDN链接 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #app {
+            text-align: center;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>妖火自动吃肉</h1>
+            <input v-model="sid" placeholder="输入SID">
+            <button @click="submit">提交</button>
+            <div id="result">
+                {{ result.success ? displaySuccessMessage(result.data) : (result.message ? '请求失败，错误信息：' + result.message : '') }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                sid: '',
+                result: {
+                    success: false,
+                    data: null,
+                    message: null
+                }
+            },
+            methods: {
+                submit: function () {
+                    // 创建一个FormData对象，并将参数放入其中
+                    const formData = new FormData();
+                    formData.append('sid', this.sid);
+
+                    // 使用Axios库发送带有FormData的POST请求
+                    axios.post('upsid.php', formData)
+                        .then(response => {
+                            // 请求成功时更新this.result的值
+                            this.result = {
+                                success: true,
+                                data: response.data,
+                                message: null
+                            };
+                        })
+                        .catch(error => {
+                            // 请求失败时更新this.result的值
+                            this.result = {
+                                success: false,
+                                data: null,
+                                message: error.message
+                            };
+                        });
+                },
+                displaySuccessMessage: function (data) {
+                    // 根据返回的数据显示不同的成功消息
+                    if (data.message === "记录已更新") {
+                        return '请求成功，记录已更新';
+                    } else if (data.message === "记录已成功添加到数据库") {
+                        return '请求成功，记录已成功添加到数据库';
+                    } else {
+                        return 'sid异常，请检查';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
