@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Shanghai');
+
 // 数据库连接信息
 require_once 'database.php';
 
@@ -39,48 +41,65 @@ if ($tieziResult->num_rows > 0) {
 // 执行POST请求
 foreach ($allsid as $sid) {
     foreach ($alltiezi as $tiezi) {
-        // 构建POST请求的数据
-        $postData = http_build_query([
-            'content' => '吃',
-            'action' => 'add',
-            'id' => $tiezi,
-            'siteid' => 1000,
-            'lpage' => 1,
-            'classid' => 177,
-            'g' => '快速回复'
-        ]);
+        // 检查是否已经存在相同的sid和tiezi记录
+        $checkExistingQuery = "SELECT * FROM task WHERE sid = '$sid' AND tiezi = '$tiezi'";
+        $existingResult = $conn->query($checkExistingQuery);
 
-        // 构建请求的URL
-        $url = "https://www.yaohuo.me/bbs/book_re_QQ.aspx?sid=$sid";
+        if ($existingResult->num_rows == 0) {
+            // 构建POST请求的数据
+            $postData = http_build_query([
+                'content' => '吃',
+                'action' => 'add',
+                'id' => $tiezi,
+                'siteid' => 1000,
+                'lpage' => 1,
+                'classid' => 177,
+                'g' => '快速回复'
+            ]);
 
-        // 构建请求头
-        $headers = [
-            'Content-Type: application/x-www-form-urlencoded',
-            'Content-Length: ' . strlen($postData)
-        ];
+            // 构建请求的URL
+            $url = "https://www.yaohuo.me/bbs/book_re_QQ.aspx?sid=$sid";
 
-        // 使用cURL执行POST请求
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            // 构建请求头
+            $headers = [
+                'Content-Type: application/x-www-form-urlencoded',
+                'Content-Length: ' . strlen($postData)
+            ];
 
-        // 执行请求并输出结果
-        $result = curl_exec($ch);
-        //echo "URL: $url\n";
-        //echo "Headers: " . implode(', ', $headers) . "\n";
-        echo "Response: $result\n";
+            // 将sid、tiezi插入到task表
+            $insertTaskQuery = "INSERT INTO task (sid, tiezi) VALUES ('$sid', '$tiezi')";
+            $insertResult = $conn->query($insertTaskQuery);
 
-        // 关闭cURL资源
-        curl_close($ch);
+            if ($insertResult) {
+                // 使用cURL执行POST请求
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                // 执行请求并输出结果
+                $result = curl_exec($ch);
+
+                // 将返回结果和当前时间更新到task表
+                $updateTaskQuery = "UPDATE task SET result = '$result', request_time = NOW() WHERE sid = '$sid' AND tiezi = '$tiezi'";
+                $conn->query($updateTaskQuery);
+
+                echo "Response: $result\n";
+
+                // 更新tiezi的状态为1
+                $updateQuery = "UPDATE rou SET zhuangtai = 1 WHERE tiezi = '$tiezi'";
+                $conn->query($updateQuery);
+
+                // 关闭cURL资源
+                curl_close($ch);
+            } else {
+                echo "无法插入 sid=$sid 和 tiezi=$tiezi 的任务\n";
+            }
+        } else {
+            echo "sid=$sid 和 tiezi=$tiezi 的任务已存在，跳过...\n";
+        }
     }
-}
-
-// 更新tiezi的状态为1
-foreach ($alltiezi as $tiezi) {
-    $updateQuery = "UPDATE rou SET zhuangtai = 1 WHERE tiezi = '$tiezi'";
-    $conn->query($updateQuery);
 }
 
 // 关闭数据库连接

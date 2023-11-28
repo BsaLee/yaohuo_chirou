@@ -18,7 +18,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         #app {
@@ -30,8 +30,9 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            max-width: 400px;
-            width: 100%;
+            max-width: 600px; /* 增大中间框的宽度 */
+            width: 100%!;(MISSING)
+            text-align: left; /* 左对齐 */
         }
 
         h1 {
@@ -39,7 +40,7 @@
         }
 
         input {
-            width: 100%;
+            width: calc(100 - 20px); /* 考虑padding的宽度，使其与按钮宽度相等 */
             padding: 10px;
             margin-top: 10px;
             box-sizing: border-box;
@@ -52,6 +53,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-top: 10px; /* 提交按钮下方的间距 */
         }
 
         button:hover {
@@ -63,6 +65,19 @@
             font-weight: bold;
             color: #333;
             white-space: pre-wrap;
+        }
+
+        #announcement {
+            margin-top: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            /* 在小屏幕上使容器宽度自适应 */
+            .container {
+                max-width: 100%!;(MISSING)
+            }
         }
     </style>
 </head>
@@ -76,6 +91,17 @@
             <div id="result">
                 {{ result.success ? displaySuccessMessage(result.data) : (result.message ? '请求失败，错误信息：' + result.message : '') }}
             </div>
+        </div>
+        <div id="announcement">
+            <!-- 这里是公告栏，你可以在这里添加需要的内容 -->
+			sid是www.yaohuo.me网站cookie中的sidwww值<br>
+           GitHub：https://github.com/BsaLee/yaohuo_chirou<br>
+		   <br>
+		   程序托管于hz.cz<br>
+		   本站网址1：http://chirou.hz.cz/(需要科学上网)<br>
+		   本站网址2：http://luqiao.scxc.ink/(不需要科学，但是可能被删)<br>
+		   <br>
+		   注意：每2分钟执行一次吃肉，有可能吃不到肉~
         </div>
     </div>
 

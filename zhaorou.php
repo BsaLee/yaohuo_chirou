@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Shanghai');
+
 // 数据库连接信息
 require_once 'database.php';
 
